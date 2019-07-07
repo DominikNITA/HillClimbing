@@ -4,9 +4,11 @@ let targetGraphics;
 var targetImage;
 let ready = false;
 let algo;
+
 function preload() {
-    tr = loadImage('watermelon.png');
-  }
+
+}
+
 function setup() {
     var canvas = createCanvas(300, 200);
     canvas.parent("canvasHolder");
@@ -20,30 +22,29 @@ function setup() {
     $(document).ready(function () {
         bsCustomFileInput.init()
     })
-    // let wm = loadImage('watermelon.png');
-    // outputImage.image(outputGraphics,0,0,width,height);
-    // image(outputImage,0,0);
 }
 
 
 function draw() {
-    if(ready){
-        //background(255);
-        image(targetImage,0,0,width/2,height);
+    if (ready) {
+        image(targetImage, 0, 0, width / 2, height);
         algo.calculateNextGeneration();
-        image(algo.showOutputImage(), width/2,0,width/2,height);
+        image(algo.showOutputImage(), width / 2, 0, width / 2, height);
+        text(algo.generationCounter, 20, 70);
+        text(frameRate(),20,100);
     }
 
 }
 
 function gotFile(file) {
-    var tempImg = createImg(file.data);
-    targetImage = createGraphics(tempImg.width, tempImg.height);
-    targetImage.image(tempImg, 0, 0);
-    tempImg.hide();
-    algo = new HLAlgorithm(targetImage);
-    ready = true;
-    console.log(algo.calculateScoreForPixel([0,0,0,0],[10,10,10,10]));
+    loadImage(file.data, tempImg => {
+        targetImage = createGraphics(tempImg.width, tempImg.height);
+        targetImage.image(tempImg, 0, 0);
+        algo = new HCAlgorithm(targetImage);
+        algo.applySettings(coordinateSystems.CARTESIAN,null,null);
+        ready = true;
+    })
+
 }
 
 function windowResized() {
