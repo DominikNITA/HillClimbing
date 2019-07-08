@@ -22,6 +22,7 @@ function setup() {
     $(document).ready(function () {
         bsCustomFileInput.init()
     })
+
 }
 
 

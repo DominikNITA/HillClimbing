@@ -63,11 +63,9 @@ class HCAlgorithm {
         while (lookingForBetterScore) {
             this.generate();
             this.stepCounter++;
-            //console.log("STEP: " + this.stepCounter);
         }
         console.timeEnd("Generation"+ this.generationCounter);
         this.generationCounter++;
-        //console.log(this.generationCounter);
     }
 
      createNextStepCartesian(shapeWidth, shapeHeight, shapeRange, angle, copiedGraphics, currentStepGraphics){
@@ -91,9 +89,9 @@ class HCAlgorithm {
     createNextStepPolar(shapeWidth, shapeHeight, shapeRange, angle, copiedGraphics, currentStepGraphics){
         currentStepGraphics.translate(currentStepGraphics.width/2, currentStepGraphics.height/2);
         currentStepGraphics.rotate(angle);
-        let r = currentStepGraphics.height/abs(sin(angle));
+        let r = currentStepGraphics.height/2/abs(sin(angle));
         if(abs(tan(angle)) <= currentStepGraphics.height/currentStepGraphics.width){
-            r = currentStepGraphics.width/abs(cos(angle));
+            r = currentStepGraphics.width/2/abs(cos(angle));
         }
         currentStepGraphics.ellipse(random(-r,r),0,shapeWidth,shapeHeight);
         this.compareScores(currentStepGraphics, copiedGraphics, 0, 0, shapeRange);
@@ -102,7 +100,6 @@ class HCAlgorithm {
     }
 
     compareScores(currentStepGraphics, copiedGraphics, x, y, range){
-        console.time("compareScore");
         var currentStepScore = this.calculateScore2(currentStepGraphics,x,y,range);
         var previousStepScore = this.calculateScore2(copiedGraphics,x,y,range);
         if(currentStepScore < previousStepScore){
@@ -110,13 +107,11 @@ class HCAlgorithm {
             outputGraphics.image(currentStepGraphics,0,0);
             lookingForBetterScore = false;
         }
-        console.timeEnd("compareScore");
         currentStepGraphics.remove();
         copiedGraphics.remove();
     }
 
     generate(){
-        console.time("generate");
         let currentStepGraphics = createGraphics(targetImage.width,targetImage.height);
         currentStepGraphics.image(outputGraphics,0,0);
         currentStepGraphics.angleMode(RADIANS);
@@ -125,14 +120,13 @@ class HCAlgorithm {
         currentStepGraphics.noStroke();
 
         let angle = random(2*PI);
-        let shapeWidth = parseInt(random(5,500));
-        let shapeHeight = parseInt(random(5,500));
-        let shapeRange = max([shapeWidth,shapeHeight]);
+        let shapeWidth = parseInt(random(5,40));
+        let shapeHeight = parseInt(random(5,50));
+        let shapeRange = max([shapeWidth,shapeHeight])/2;
 
 
         let copiedGraphics = createGraphics(currentStepGraphics.width, currentStepGraphics.height);
         copiedGraphics.image(currentStepGraphics,0,0);
-        console.timeEnd("generate");
         createNextStep(shapeWidth, shapeHeight, shapeRange, angle, copiedGraphics, currentStepGraphics);
 
         currentStepGraphics.remove();
@@ -143,39 +137,39 @@ class HCAlgorithm {
         let sc = 0;
         targetImage.loadPixels();
         graphToCheck.loadPixels();
-        for (let i = x-range/2 ; x+range/2 >= i ; i++) {
-            for (let j = y-range/2; y+range/2 >= j; j++) {
+        for (let i = x-range ; x+range >= i ; i++) {
+            for (let j = y-range; y+range >= j; j++) {
                 if(i<0 || j < 0 || i > targetImage.width || j > targetImage.height){
                     continue;
                 }
-                sc += this.calculateScoreForPixel(targetImage.get(i,j), graphToCheck.get(i,j));
+                var index = (i + j * targetImage.width)*4;
+                sc += this.calculateScoreForPixel(
+                    [targetImage.pixels[index],targetImage.pixels[index+1],targetImage.pixels[index+2],targetImage.pixels[index+3]],
+                    [graphToCheck.pixels[index],graphToCheck.pixels[index+1],graphToCheck.pixels[index+2],graphToCheck.pixels[index+3]]
+                );
             }
         }
         return sc;
     }
 
-
-
-    calculateScore(graphToCheck){
-        let sc = 0;
-        targetImage.loadPixels();
-        graphToCheck.loadPixels();
-        let pixelCount = 4 * targetImage.width * targetImage.height;
-        for (let i = 0; i < pixelCount; i+=4) {
-
-            sc += this.calculateScoreForPixel(
-                [targetImage.pixels[i],targetImage.pixels[i+1],
-                targetImage.pixels[i+2],targetImage.pixels[i+3]],
-                [graphToCheck.pixels[i],graphToCheck.pixels[i+1],
-                graphToCheck.pixels[i+2],graphToCheck.pixels[i+3]]
-            )
-
-        }
-        graphToCheck.updatePixels();
-        targetImage.updatePixels();
-        graphToCheck.remove();
-        return sc;
-    }
+    // calculateScore(graphToCheck){
+    //     let sc = 0;
+    //     targetImage.loadPixels();
+    //     graphToCheck.loadPixels();
+    //     let pixelCount = 4 * targetImage.width * targetImage.height;
+    //     for (let i = 0; i < pixelCount; i+=4) {
+    //         sc += this.calculateScoreForPixel(
+    //             [targetImage.pixels[i],targetImage.pixels[i+1],
+    //             targetImage.pixels[i+2],targetImage.pixels[i+3]],
+    //             [graphToCheck.pixels[i],graphToCheck.pixels[i+1],
+    //             graphToCheck.pixels[i+2],graphToCheck.pixels[i+3]]
+    //         )
+    //     }
+    //     graphToCheck.updatePixels();
+    //     targetImage.updatePixels();
+    //     graphToCheck.remove();
+    //     return sc;
+    // }
 
     calculateScoreForPixel(targetPixel, actualPixel) {
         let [tRed, tGreen, tBlue, tAlpha] = targetPixel;
